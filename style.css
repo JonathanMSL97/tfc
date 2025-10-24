@@ -1,0 +1,262 @@
+/* -------------------------
+   ESTILO GENERAL
+-------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Open+Sans&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #120b1b; /* tono violeta oscuro */
+  color: #eaeaea;
+  font-family: 'Open Sans', sans-serif;
+  line-height: 1.6;
+}
+
+/* -------------------------
+   BARRA DE NAVEGACIÓN
+-------------------------- */
+.barra-inicio {
+  background-color: #1a0f2b;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.barra-inicio p {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #b76cff;
+}
+
+.barra-inicio a {
+  color: #ddd;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.barra-inicio a:hover {
+  color: #b76cff;
+}
+
+/* -------------------------
+   SECCIÓN HEADER / HERO
+-------------------------- */
+.header {
+  background: url(fondo-cartas-tarot-dibujadas-mano_79603-2055.jpg) center/cover no-repeat;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  color: #fff;
+  text-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+}
+
+.header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.header h2 {
+  font-weight: 400;
+  font-size: 1.3rem;
+  color: #ddd;
+  margin-bottom: 2rem;
+}
+
+.header button {
+  background-color: #a44cff;
+  color: #fff;
+  border: none;
+  padding: 0.8rem 1.8rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(164, 76, 255, 0.5);
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.header button:hover {
+  background-color: #882cd1;
+  transform: translateY(-3px);
+}
+
+/* -------------------------
+   SECCIÓN SOBRE MÍ
+-------------------------- */
+.sobre-mi {
+  padding: 5rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.sobre-mi h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  color: #fff;
+  margin-bottom: 1.5rem;
+}
+
+.sobre-mi p {
+  margin-bottom: 1rem;
+  color: #d8d8d8;
+}
+
+.sobre-mi p:last-child {
+  color: #b76cff;
+  font-weight: bold;
+}
+
+/* -------------------------
+   SECCIÓN SERVICIOS
+-------------------------- */
+.servicios {
+  background-color: #1a0f2b;
+  text-align: center;
+  padding: 5rem 2rem;
+}
+
+.servicios h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  color: #fff;
+  margin-bottom: 3rem;
+}
+
+.servicios article {
+  background-color: #1f1430;
+  margin: 1rem auto;
+  padding: 2rem;
+  border-radius: 10px;
+  max-width: 700px;
+  transition: transform 0.3s;
+}
+
+.servicios article:hover {
+  transform: translateY(-5px);
+}
+
+.servicios h3 {
+  font-family: 'Playfair Display', serif;
+  color: #b76cff;
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.servicios p {
+  color: #ddd;
+}
+
+.servicios button {
+  background-color: #a44cff;
+  color: #fff;
+  border: none;
+  padding: 0.8rem 1.8rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 2rem;
+  box-shadow: 0 0 10px rgba(164, 76, 255, 0.5);
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.servicios button:hover {
+  background-color: #882cd1;
+  transform: translateY(-3px);
+}
+.servicios-contenedor {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* -------------------------
+   TESTIMONIOS
+-------------------------- */
+.testimonios {
+  background-color: #120b1b;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+
+.testimonios h2 {
+  font-family: 'Playfair Display', serif;
+  color: #fff;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.testimonios article {
+  background-color: #1f1430;
+  max-width: 700px;
+  margin: 1rem auto;
+  padding: 2rem;
+  border-radius: 10px;
+  color: #d3cce3;
+  font-style: italic;
+}
+
+.testimonios p:last-child {
+  font-style: normal;
+  color: #b76cff;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+/* -------------------------
+   FOOTER
+-------------------------- */
+.footer {
+  background-color: #1a0f2b;
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.footer p {
+  margin: 0;
+}
+
+/* -------------------------
+   RESPONSIVE
+-------------------------- */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .header h2 {
+    font-size: 1rem;
+  }
+}
+html {
+  scroll-behavior: smooth;
+}
+.servicios img {
+  width: 100%;          /* se ajusta al ancho del contenedor */
+  height: 200px;        /* altura fija para mantener uniformidad */
+  object-fit: cover;    /* recorta sin deformar */
+  border-radius: 10px;  /* bordes redondeados */
+  margin-bottom: 15px;
+}
+
