@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Open+Sans:wght@400;600&display=swap');
+
+:root {
+  --morado-oscuro: #120b1b;
+  --morado-medio: #1a0f2b;
+  --morado-claro: #2b1d3a;
+  --dorado: #f6c90e;
+  --texto: #eaeaea;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: var(--morado-oscuro);
+  color: var(--texto);
+  line-height: 1.6;
+}
+
+/* NAV */
+.barra-inicio {
+  background-color: var(--morado-medio);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.barra-inicio p {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--dorado);
+}
+.barra-inicio a {
+  color: #ddd;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+.barra-inicio a:hover {
+  color: var(--dorado);
+}
+
+/* HEADER */
+.header-reserva {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+.header-reserva h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+.pasos {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  font-weight: 600;
+  color: #888;
+}
+.pasos .activo {
+  color: var(--dorado);
+}
+.progreso {
+  background-color: #2d2042;
+  height: 6px;
+  border-radius: 4px;
+  margin: 1rem auto 0;
+  width: 60%;
+}
+.progreso .relleno {
+  background-color: var(--dorado);
+  height: 100%;
+  width: 33%;
+  border-radius: 4px;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.contenedor-reserva {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+.paso h2 {
+  font-family: 'Playfair Display', serif;
+  color: #fff;
+  margin-bottom: 1.2rem;
+}
+.opciones-sesion {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.tarjeta {
+  flex: 1;
+  background-color: var(--morado-claro);
+  padding: 1.5rem;
+  border-radius: 10px;
+  transition: transform 0.2s, border 0.2s;
+  border: 2px solid transparent;
+}
+.tarjeta:hover {
+  border-color: var(--dorado);
+  transform: translateY(-3px);
+}
+.tarjeta h3 {
+  color: var(--dorado);
+  margin-bottom: 0.5rem;
+  font-family: 'Playfair Display', serif;
+}
+.tarjeta .precio {
+  margin-top: 1rem;
+  font-weight: bold;
+}
+.tarjeta.seleccionada {
+  border: 2px solid #ffd700;
+  background-color: #38331c;
+  
+}
+/* CALENDARIO */
+.calendario-real { max-width: 500px; margin: 20px auto; }
+.cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.dias-semana, #diasCalendario { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+#diasCalendario button { padding: 10px; border: 1px solid #ccc; cursor: pointer; }
+#diasCalendario button.inactivo { opacity: 0.3; cursor: default; }
+#diasCalendario button.seleccionado { background-color: #ffd700; }
+.botones-hora { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.botones-hora button { padding: 8px 12px; cursor: pointer; }
+.botones-hora button.ocupado { background-color: #ccc; cursor: not-allowed; }
+.botones-hora button.seleccionado { background-color: #ffd700; }
+
+/* FORMULARIO */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.formulario input, .formulario textarea {
+  background-color: var(--morado-claro);
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem;
+  color: #fff;
+}
+.boton-primario {
+  background-color: var(--dorado);
+  color: #000;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: transform 0.2s, background-color 0.2s;
+}
+.boton-primario:hover {
+  background-color: #ffd84d;
+  transform: translateY(-2px);
+}
+
+/* RESUMEN */
+.resumen {
+  background-color: var(--morado-claro);
+  padding: 2rem;
+  border-radius: 10px;
+  height: fit-content;
+}
+.resumen h3 {
+  color: var(--dorado);
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 1rem;
+}
+.resumen p {
+  margin-bottom: 0.5rem;
+}
+.resumen .total {
+  color: var(--dorado);
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+.resumen hr {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 1rem 0;
+}
+
+/* FOOTER */
+.footer {
+  background-color: var(--morado-medio);
+  text-align: center;
+  padding: 1.5rem;
+  color: #aaa;
+  font-size: 0.9rem;
+  margin-top: 3rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .contenedor-reserva {
+    grid-template-columns: 1fr;
+  }
+  .resumen {
+    margin-top: 2rem;
+  }
+}
