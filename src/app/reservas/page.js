@@ -170,91 +170,69 @@ export default function PageReservas() {
   const procesarReservaReal = async (e) => {
     e.preventDefault();
 
-    // 1. Validaciones básicas
+    // 1. Validaciones básicas: Si falta algo, simplemente no hacemos nada (el botón suele estar deshabilitado)
     if (!sesionElegida || !diaSeleccionado || !horaSeleccionada) {
-      alert("Por favor, completa todos los pasos.");
-      return;
+      return; 
     }
 
-    // --- VALIDACIÓN DE SEGURIDAD (DOBLE CHECK) ---
-    // Aunque ocultamos los botones, comprobamos por seguridad al enviar
-    // CORRECCIÓN DE ZONA HORARIA: Usamos la fecha local, no UTC
+    // --- FORMATEO DE FECHA (ZONA HORARIA LOCAL) ---
+    // Usamos esto para evitar el bug de que se guarde el día anterior
     const year = diaSeleccionado.getFullYear();
-    const month = String(diaSeleccionado.getMonth() + 1).padStart(2, '0'); // Meses van de 0 a 11
+    const month = String(diaSeleccionado.getMonth() + 1).padStart(2, '0');
     const day = String(diaSeleccionado.getDate()).padStart(2, '0');
     const fechaString = `${year}-${month}-${day}`;
 
-    // Validación 1: Pasado
+    // --- GUARDIA DE SEGURIDAD (SILENCIOSA) ---
+    // Aunque los botones están ocultos, comprobamos esto por si acaso (ej. hack o error de carga)
+    
+    // Check 1: Pasado
     const ahora = new Date();
     const fechaReserva = new Date(diaSeleccionado);
     const [horas, minutos] = horaSeleccionada.split(':');
     fechaReserva.setHours(parseInt(horas), parseInt(minutos), 0, 0);
 
     if (fechaReserva < ahora) {
-      alert("⚠️ Esa hora ya ha pasado.");
-      return;
+      console.warn("Intento de reservar hora pasada bloqueado.");
+      return; // Cortamos sin alerta visual
     }
 
-    // Validación 2: Ocupado (Usamos el estado que ya tenemos cargado)
+    // Check 2: Ocupado (Doble check con lo que cargó React)
     if (horasOcupadas.includes(horaSeleccionada)) {
-      alert("⚠️ Esa hora acaba de ser reservada. Por favor elige otra.");
-      // Forzamos recarga de horas por si acaso
-      const nuevaLista = [...horasOcupadas]; // Simulación, idealmente recargaríamos
+      alert("⚠️ Vaya, alguien acaba de reservar ese hueco hace un segundo."); // Esta SÍ la dejaría, es el único caso raro "en tiempo real"
       return;
     }
 
+    // --- CONEXIÓN CON STRIPE ---
     try {
-      // 2. Preparamos la Mutation (CORREGIDO TIPO FECHA A STRING!)
-      const mutation = `
-        mutation CrearReserva($nombre: String!, $email: String!, $fecha: String!, $hora: String!, $precio: Int!, $sesion: String!, $notas: String) {
-          insert_reservas_one(object: {
-            nombre: $nombre, 
-            email: $email, 
-            fecha: $fecha, 
-            hora: $hora, 
-            precio: $precio, 
-            sesion: $sesion, 
-            notas: $notas
-          }) {
-            id
-            created_at
-          }
-        }
-      `;
-
-      const variables = {
-        nombre: datosForm.nombre,
-        email: datosForm.email,
-        fecha: fechaString,
-        hora: horaSeleccionada,
-        precio: sesionElegida.precio,
-        sesion: sesionElegida.titulo,
-        notas: datosForm.notas
-      };
-
-      // 3. Enviamos a Hasura
-      const response = await fetch(process.env.NEXT_PUBLIC_HASURA_API_URL, {
+      const response = await fetch('/api/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: mutation, variables: variables })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nombre: datosForm.nombre,
+          email: datosForm.email,
+          fecha: fechaString,
+          hora: horaSeleccionada,
+          precio: sesionElegida.precio,
+          sesion: sesionElegida.titulo,
+          notas: datosForm.notas
+        }),
       });
 
-      const json = await response.json();
+      const data = await response.json();
 
-      if (json.errors) {
-        console.error("Error GraphQL:", json.errors);
-        alert("Hubo un error al guardar la reserva.");
-        return;
+      if (data.url) {
+        // ¡Éxito! Nos vamos a Stripe
+        window.location.href = data.url;
+      } else {
+        console.error("Stripe no devolvió URL:", data);
+        alert("Hubo un problema iniciando el pago. Inténtalo de nuevo.");
       }
 
-      // 4. ¡Éxito!
-      console.log("Reserva guardada:", json.data);
-      alert(`¡Reserva Confirmada!`);
-      router.push("/"); 
-
     } catch (error) {
-      console.error("Error de red:", error);
-      alert("Error de conexión.");
+      console.error("Error conectando con Stripe:", error);
+      alert("Error de conexión. Comprueba tu internet.");
     }
   };
 
