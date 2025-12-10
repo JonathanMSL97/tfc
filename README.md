@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🔮 Tarot María Rosa - Plataforma de Reservas Full-Stack
 
-## Getting Started
+Este proyecto es la modernización digital del servicio de Tarot de María Rosa. Es una aplicación web **Full-Stack** diseñada para gestionar reservas de citas, pagos y calendario de forma automatizada, migrada desde una web estática a una arquitectura moderna basada en componentes y servicios en la nube.
 
-First, run the development server:
+## 🚀 Tecnologías y Stack (TFC)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Este proyecto utiliza una arquitectura **Serverless** y orientada a eventos, priorizando la escalabilidad y el bajo coste de mantenimiento.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Frontend (Cliente)
+* **Framework:** [Next.js 14](https://nextjs.org/) (App Router).
+* **Librería UI:** React.js (Hooks personalizados para la lógica de negocio).
+* **Lenguaje:** JavaScript (ES6+).
+* **Estilos:** CSS Global con variables nativas (CSS Variables) y diseño Responsive.
+* **Despliegue:** Vercel.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### Backend & Datos (Serverless)
+* **API Layer:** [Hasura Cloud](https://hasura.io/) (GraphQL instantáneo sobre la base de datos).
+* **Base de Datos:** [Neon Tech](https://neon.tech/) (PostgreSQL Serverless).
+* **Infraestructura:** Todo el backend está gestionado en la nube, sin servidores físicos que mantener.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## ✨ Funcionalidades Clave
 
-To learn more about Next.js, take a look at the following resources:
+### 1. Landing Page Informativa
+* Diseño limpio y místico acorde a la marca.
+* Secciones modulares: Hero, Sobre Mí, Servicios y Testimonios.
+* Navegación fluida (SPA) usando el componente `<Link>` de Next.js.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. Sistema de Reservas (Wizard Interactivo)
+El núcleo de la aplicación es un **proceso de reserva en 3 pasos** con gestión de estado compleja (`useState`):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* **Paso 1: Selección de Servicio.** Tarjetas interactivas que actualizan el precio en tiempo real.
+* **Paso 2: Calendario Inteligente.**
+    * Desarrollado desde cero (sin librerías pesadas) usando lógica nativa de `Date`.
+    * Cálculo automático de días, semanas y años bisiestos.
+    * Bloqueo de fechas pasadas y gestión de horarios disponibles.
+* **Paso 3: Captura de Datos.** Formulario controlado en React para recopilar información del cliente.
 
-## Deploy on Vercel
+### 3. Gestión de Datos (En Progreso)
+* Modelado de base de datos relacional en **PostgreSQL**.
+* Tabla `reservas` configurada con UUIDs y Timestamps automáticos.
+* Conexión establecida mediante **Hasura** para operaciones CRUD vía GraphQL.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
+## 🛠️ Instalación y Configuración Local
+
+Si quieres ejecutar este proyecto en tu máquina local:
+
+1.  **Clonar el repositorio:**
+    ```bash
+    git clone [https://github.com/JonathanMSL97/tfc.git](https://github.com/JonathanMSL97/tfc.git)
+    cd tfc
+    ```
+
+2.  **Instalar dependencias:**
+    ```bash
+    npm install
+    ```
+
+3.  **Variables de Entorno:**
+    *(Próximamente)* Se necesitará configurar un archivo `.env.local` con las claves de conexión a Hasura/Neon.
+
+4.  **Arrancar el servidor de desarrollo:**
+    ```bash
+    npm run dev
+    ```
+
+5.  Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
+---
+
+## 🗺️ Hoja de Ruta (Roadmap)
+
+El desarrollo se encuentra actualmente en la **Fase 3**.
+
+- [x] **Fase 1: Migración Frontend.** Portar HTML/CSS estático a componentes React y Next.js.
+- [x] **Fase 2: Lógica de Negocio.** Crear el motor del calendario y el flujo de estados del wizard de reservas.
+- [x] **Fase 3: Infraestructura Backend.** Configurar Neon (Postgres) y Hasura (GraphQL).
+- [ ] **Fase 4: Integración API.** Conectar el formulario de React con Hasura (Mutation `insert_reservas`).
+- [ ] **Fase 5: Pagos y Agendamiento.** Integración con Stripe y Google Calendar API.
+
+---
+
+## ✒️ Autor
+
+**Jonathan M.** - Desarrollador Full Stack en formación.
+*Proyecto realizado como Trabajo de Fin de Ciclo (TFC).*
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
