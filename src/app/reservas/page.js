@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // Para redirigir al usuario después de pagar
 
 export default function PageReservas() {
@@ -15,7 +15,10 @@ export default function PageReservas() {
   const [diaSeleccionado, setDiaSeleccionado] = useState(null);
   const [horaSeleccionada, setHoraSeleccionada] = useState(null);
   
-  // 🆕 Datos del Usuario (Formulario)
+  // 🆕 Estado para guardar las horas que ya están cogidas en la BD
+  const [horasOcupadas, setHorasOcupadas] = useState([]);
+
+  // Datos del Usuario (Formulario)
   const [datosForm, setDatosForm] = useState({
     nombre: "",
     email: "",
@@ -29,9 +32,10 @@ export default function PageReservas() {
     { id: 3, titulo: "Sesión Profunda", precio: 70, desc: "Análisis detallado." },
   ];
 
-  const horasDisponibles = ["09:00", "10:00", "11:00", "16:00", "17:00", "18:00", "19:00"];
+  // Todas las horas posibles (antes de filtrar)
+  const HORAS_TOTALES = ["09:00", "10:00", "11:00", "16:00", "17:00", "18:00", "19:00"];
 
-  // --- LÓGICA AUXILIAR ---
+  // --- LÓGICA DE CALENDARIO ---
   const mesAnio = fechaCalendario.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
 
   const cambiarMes = (offset) => {
@@ -61,7 +65,10 @@ export default function PageReservas() {
           key={d}
           className={`dia-btn ${esSeleccionado ? "seleccionado" : ""}`}
           disabled={esPasado}
-          onClick={() => { setDiaSeleccionado(fechaActual); setHoraSeleccionada(null); }}
+          onClick={() => { 
+            setDiaSeleccionado(fechaActual); 
+            setHoraSeleccionada(null); // Reseteamos hora al cambiar de día
+          }}
         >
           {d}
         </button>
@@ -70,31 +77,185 @@ export default function PageReservas() {
     return dias;
   };
 
-  // 🆕 LÓGICA DEL FORMULARIO
-  const handleInputChange = (e) => {
-    // Actualizamos solo el campo que ha cambiado (nombre, email o notas)
-    setDatosForm({
-      ...datosForm, // Mantenemos lo que ya había
-      [e.target.name]: e.target.value // Sobrescribimos el campo nuevo
+  // --- 🆕 EFECTO: CARGAR HORAS OCUPADAS DESDE HASURA ---
+  useEffect(() => {
+    const cargarHorasOcupadas = async () => {
+      // Si no hay día seleccionado, no hacemos nada
+      if (!diaSeleccionado) return;
+
+      // Reseteamos las ocupadas mientras cargamos
+      setHorasOcupadas([]);
+
+      // CORRECCIÓN DE ZONA HORARIA: Usamos la fecha local, no UTC
+      const year = diaSeleccionado.getFullYear();
+      const month = String(diaSeleccionado.getMonth() + 1).padStart(2, '0'); // Meses van de 0 a 11
+      const day = String(diaSeleccionado.getDate()).padStart(2, '0');
+      const fechaString = `${year}-${month}-${day}`;
+
+      const query = `
+        query GetHorasOcupadas($fecha: String!) {
+          reservas(where: {fecha: {_eq: $fecha}}) {
+            hora
+          }
+        }
+      `;
+
+      try {
+        const response = await fetch(process.env.NEXT_PUBLIC_HASURA_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: query,
+            variables: { fecha: fechaString }
+          })
+        });
+
+        const json = await response.json();
+        
+        if (json.data && json.data.reservas) {
+          // Extraemos solo las horas en un array simple: ["10:00", "16:00"]
+          const ocupadas = json.data.reservas.map(r => r.hora);
+          setHorasOcupadas(ocupadas);
+        }
+      } catch (error) {
+        console.error("Error cargando disponibilidad:", error);
+      }
+    };
+
+    cargarHorasOcupadas();
+  }, [diaSeleccionado]); // Se ejecuta cada vez que cambia el día
+
+
+  // --- 🆕 LÓGICA DE FILTRADO DE HORAS VISIBLES ---
+  const getHorasVisibles = () => {
+    if (!diaSeleccionado) return [];
+
+    const ahora = new Date();
+    // Comprobamos si el día seleccionado es HOY
+    const esHoy = diaSeleccionado.getDate() === ahora.getDate() &&
+                  diaSeleccionado.getMonth() === ahora.getMonth() &&
+                  diaSeleccionado.getFullYear() === ahora.getFullYear();
+
+    return HORAS_TOTALES.filter((horaString) => {
+      // 1. Si está en la lista de ocupadas (de la BD), fuera.
+      if (horasOcupadas.includes(horaString)) return false;
+
+      // 2. Si es HOY, filtramos las horas que ya pasaron
+      if (esHoy) {
+        const [h, m] = horaString.split(':');
+        const fechaSlot = new Date(); 
+        fechaSlot.setHours(parseInt(h), parseInt(m), 0, 0);
+        
+        // Si la hora del slot es menor que ahora, fuera.
+        if (fechaSlot < ahora) return false;
+      }
+
+      return true; // Si pasa los filtros, se muestra
     });
   };
 
-  const procesarPagoSimulado = (e) => {
-    e.preventDefault(); // Evita que la página se recargue
-    
-    // Aquí es donde en el futuro conectaremos con Stripe y Backend
-    alert(`
-      ¡Simulación de Reserva Exitosa! 🎉
-      
-      Sesión: ${sesionElegida.titulo}
-      Fecha: ${diaSeleccionado.toLocaleDateString()} a las ${horaSeleccionada}
-      Cliente: ${datosForm.nombre}
-      
-      (En el futuro, esto te llevará a la pasarela de pago real)
-    `);
+  // Guardamos las horas limpias en una variable
+  const horasParaMostrar = getHorasVisibles();
 
-    // Redirigir a inicio después de aceptar
-    router.push("/");
+
+  // --- MANEJO DEL FORMULARIO ---
+  const handleInputChange = (e) => {
+    setDatosForm({
+      ...datosForm,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  // --- FUNCIÓN PRINCIPAL DE RESERVA ---
+  const procesarReservaReal = async (e) => {
+    e.preventDefault();
+
+    // 1. Validaciones básicas
+    if (!sesionElegida || !diaSeleccionado || !horaSeleccionada) {
+      alert("Por favor, completa todos los pasos.");
+      return;
+    }
+
+    // --- VALIDACIÓN DE SEGURIDAD (DOBLE CHECK) ---
+    // Aunque ocultamos los botones, comprobamos por seguridad al enviar
+    // CORRECCIÓN DE ZONA HORARIA: Usamos la fecha local, no UTC
+    const year = diaSeleccionado.getFullYear();
+    const month = String(diaSeleccionado.getMonth() + 1).padStart(2, '0'); // Meses van de 0 a 11
+    const day = String(diaSeleccionado.getDate()).padStart(2, '0');
+    const fechaString = `${year}-${month}-${day}`;
+
+    // Validación 1: Pasado
+    const ahora = new Date();
+    const fechaReserva = new Date(diaSeleccionado);
+    const [horas, minutos] = horaSeleccionada.split(':');
+    fechaReserva.setHours(parseInt(horas), parseInt(minutos), 0, 0);
+
+    if (fechaReserva < ahora) {
+      alert("⚠️ Esa hora ya ha pasado.");
+      return;
+    }
+
+    // Validación 2: Ocupado (Usamos el estado que ya tenemos cargado)
+    if (horasOcupadas.includes(horaSeleccionada)) {
+      alert("⚠️ Esa hora acaba de ser reservada. Por favor elige otra.");
+      // Forzamos recarga de horas por si acaso
+      const nuevaLista = [...horasOcupadas]; // Simulación, idealmente recargaríamos
+      return;
+    }
+
+    try {
+      // 2. Preparamos la Mutation (CORREGIDO TIPO FECHA A STRING!)
+      const mutation = `
+        mutation CrearReserva($nombre: String!, $email: String!, $fecha: String!, $hora: String!, $precio: Int!, $sesion: String!, $notas: String) {
+          insert_reservas_one(object: {
+            nombre: $nombre, 
+            email: $email, 
+            fecha: $fecha, 
+            hora: $hora, 
+            precio: $precio, 
+            sesion: $sesion, 
+            notas: $notas
+          }) {
+            id
+            created_at
+          }
+        }
+      `;
+
+      const variables = {
+        nombre: datosForm.nombre,
+        email: datosForm.email,
+        fecha: fechaString,
+        hora: horaSeleccionada,
+        precio: sesionElegida.precio,
+        sesion: sesionElegida.titulo,
+        notas: datosForm.notas
+      };
+
+      // 3. Enviamos a Hasura
+      const response = await fetch(process.env.NEXT_PUBLIC_HASURA_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: mutation, variables: variables })
+      });
+
+      const json = await response.json();
+
+      if (json.errors) {
+        console.error("Error GraphQL:", json.errors);
+        alert("Hubo un error al guardar la reserva.");
+        return;
+      }
+
+      // 4. ¡Éxito!
+      console.log("Reserva guardada:", json.data);
+      alert(`¡Reserva Confirmada!`);
+      router.push("/"); 
+
+    } catch (error) {
+      console.error("Error de red:", error);
+      alert("Error de conexión.");
+    }
   };
 
   const porcentajeProgreso = (pasoActual / 3) * 100;
@@ -149,16 +310,30 @@ export default function PageReservas() {
                   <div className="dias-semana"><div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
                   <div className="grid-dias">{generarDias()}</div>
                 </div>
+                
                 {diaSeleccionado && (
                   <div className="horas-container">
                     <h3>Horarios para el {diaSeleccionado.toLocaleDateString()}</h3>
+                    
+                    {/* 🆕 AQUI USAMOS LA LISTA FILTRADA */}
                     <div className="grid-horas">
-                      {horasDisponibles.map((hora) => (
-                        <button key={hora} className={`hora-btn ${horaSeleccionada === hora ? "seleccionado" : ""}`} onClick={() => setHoraSeleccionada(hora)}>
-                          {hora}
-                        </button>
-                      ))}
+                      {horasParaMostrar.length > 0 ? (
+                        horasParaMostrar.map((hora) => (
+                          <button 
+                            key={hora} 
+                            className={`hora-btn ${horaSeleccionada === hora ? "seleccionado" : ""}`} 
+                            onClick={() => setHoraSeleccionada(hora)}
+                          >
+                            {hora}
+                          </button>
+                        ))
+                      ) : (
+                        <p className="col-span-3 text-center text-gray-500" style={{gridColumn: '1 / -1', color: '#888'}}>
+                          No hay horas disponibles.
+                        </p>
+                      )}
                     </div>
+
                   </div>
                 )}
                 <button style={{ marginTop: '2rem', background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setPasoActual(1)}>
@@ -167,11 +342,11 @@ export default function PageReservas() {
              </div>
           )}
 
-          {/* 🆕 PASO 3: FORMULARIO REAL */}
+          {/* PASO 3: FORMULARIO */}
           {pasoActual === 3 && (
             <div className="paso-animado">
               <h2>Tus Datos</h2>
-              <form className="formulario" onSubmit={procesarPagoSimulado}>
+              <form className="formulario" onSubmit={procesarReservaReal}>
                 <label>Nombre Completo</label>
                 <input 
                   type="text" 
@@ -200,7 +375,6 @@ export default function PageReservas() {
                   onChange={handleInputChange}
                 ></textarea>
 
-                {/* Botón de envío dentro del form para que funcione el 'Enter' */}
                 <button 
                    type="submit" 
                    className="boton-cta" 
@@ -221,7 +395,7 @@ export default function PageReservas() {
 
         </div>
 
-        {/* RESUMEN */}
+        {/* RESUMEN LATERAL */}
         <aside className="resumen">
           <h3>Resumen</h3>
           {sesionElegida ? (
@@ -246,7 +420,6 @@ export default function PageReservas() {
                   Ir a Mis Datos &rarr;
                 </button>
               )}
-              {/* En el paso 3 el botón está dentro del formulario */}
             </>
           ) : (
             <p style={{ color: '#888' }}>Selecciona una sesión.</p>
