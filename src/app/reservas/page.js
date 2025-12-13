@@ -8,13 +8,14 @@ export default function PageReservas() {
 
   // --- ESTADOS ---
   const [pasoActual, setPasoActual] = useState(1);
-  
+
   // Datos de la Reserva
   const [sesionElegida, setSesionElegida] = useState(null);
   const [fechaCalendario, setFechaCalendario] = useState(new Date());
   const [diaSeleccionado, setDiaSeleccionado] = useState(null);
   const [horaSeleccionada, setHoraSeleccionada] = useState(null);
-  
+  const [aceptaLegales, setAceptaLegales] = useState(false);
+
   // 🆕 Estado para guardar las horas que ya están cogidas en la BD
   const [horasOcupadas, setHorasOcupadas] = useState([]);
 
@@ -52,11 +53,11 @@ export default function PageReservas() {
 
     const dias = [];
     for (let i = 0; i < primerDiaSemana; i++) dias.push(<div key={`empty-${i}`}></div>);
-    
+
     for (let d = 1; d <= diasEnMes; d++) {
       const fechaActual = new Date(year, month, d);
       const hoy = new Date();
-      hoy.setHours(0,0,0,0);
+      hoy.setHours(0, 0, 0, 0);
       const esPasado = fechaActual < hoy;
       const esSeleccionado = diaSeleccionado && diaSeleccionado.getDate() === d && diaSeleccionado.getMonth() === month;
 
@@ -65,8 +66,8 @@ export default function PageReservas() {
           key={d}
           className={`dia-btn ${esSeleccionado ? "seleccionado" : ""}`}
           disabled={esPasado}
-          onClick={() => { 
-            setDiaSeleccionado(fechaActual); 
+          onClick={() => {
+            setDiaSeleccionado(fechaActual);
             setHoraSeleccionada(null); // Reseteamos hora al cambiar de día
           }}
         >
@@ -111,7 +112,7 @@ export default function PageReservas() {
         });
 
         const json = await response.json();
-        
+
         if (json.data && json.data.reservas) {
           // Extraemos solo las horas en un array simple: ["10:00", "16:00"]
           const ocupadas = json.data.reservas.map(r => r.hora);
@@ -133,8 +134,8 @@ export default function PageReservas() {
     const ahora = new Date();
     // Comprobamos si el día seleccionado es HOY
     const esHoy = diaSeleccionado.getDate() === ahora.getDate() &&
-                  diaSeleccionado.getMonth() === ahora.getMonth() &&
-                  diaSeleccionado.getFullYear() === ahora.getFullYear();
+      diaSeleccionado.getMonth() === ahora.getMonth() &&
+      diaSeleccionado.getFullYear() === ahora.getFullYear();
 
     return HORAS_TOTALES.filter((horaString) => {
       // 1. Si está en la lista de ocupadas (de la BD), fuera.
@@ -143,9 +144,9 @@ export default function PageReservas() {
       // 2. Si es HOY, filtramos las horas que ya pasaron
       if (esHoy) {
         const [h, m] = horaString.split(':');
-        const fechaSlot = new Date(); 
+        const fechaSlot = new Date();
         fechaSlot.setHours(parseInt(h), parseInt(m), 0, 0);
-        
+
         // Si la hora del slot es menor que ahora, fuera.
         if (fechaSlot < ahora) return false;
       }
@@ -170,9 +171,14 @@ export default function PageReservas() {
   const procesarReservaReal = async (e) => {
     e.preventDefault();
 
+    if (!aceptaLegales) {
+      alert("⚠️ Debes aceptar la Política de Privacidad y Condiciones para continuar.");
+      return;
+    }
+
     // 1. Validaciones básicas: Si falta algo, simplemente no hacemos nada (el botón suele estar deshabilitado)
     if (!sesionElegida || !diaSeleccionado || !horaSeleccionada) {
-      return; 
+      return;
     }
 
     // --- FORMATEO DE FECHA (ZONA HORARIA LOCAL) ---
@@ -184,7 +190,7 @@ export default function PageReservas() {
 
     // --- GUARDIA DE SEGURIDAD (SILENCIOSA) ---
     // Aunque los botones están ocultos, comprobamos esto por si acaso (ej. hack o error de carga)
-    
+
     // Check 1: Pasado
     const ahora = new Date();
     const fechaReserva = new Date(diaSeleccionado);
@@ -254,7 +260,7 @@ export default function PageReservas() {
 
       <main className="contenedor-reserva">
         <div className="contenido-pasos">
-          
+
           {/* PASO 1 */}
           {pasoActual === 1 && (
             <div className="paso-animado">
@@ -277,47 +283,47 @@ export default function PageReservas() {
 
           {/* PASO 2 */}
           {pasoActual === 2 && (
-             <div className="paso-animado">
-                <h2>Elige fecha y hora</h2>
-                <div className="calendario-container">
-                  <div className="cal-header">
-                    <button onClick={() => cambiarMes(-1)}>&lt;</button>
-                    <span style={{ textTransform: 'capitalize' }}>{mesAnio}</span>
-                    <button onClick={() => cambiarMes(1)}>&gt;</button>
-                  </div>
-                  <div className="dias-semana"><div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
-                  <div className="grid-dias">{generarDias()}</div>
+            <div className="paso-animado">
+              <h2>Elige fecha y hora</h2>
+              <div className="calendario-container">
+                <div className="cal-header">
+                  <button onClick={() => cambiarMes(-1)}>&lt;</button>
+                  <span style={{ textTransform: 'capitalize' }}>{mesAnio}</span>
+                  <button onClick={() => cambiarMes(1)}>&gt;</button>
                 </div>
-                
-                {diaSeleccionado && (
-                  <div className="horas-container">
-                    <h3>Horarios para el {diaSeleccionado.toLocaleDateString()}</h3>
-                    
-                    {/* 🆕 AQUI USAMOS LA LISTA FILTRADA */}
-                    <div className="grid-horas">
-                      {horasParaMostrar.length > 0 ? (
-                        horasParaMostrar.map((hora) => (
-                          <button 
-                            key={hora} 
-                            className={`hora-btn ${horaSeleccionada === hora ? "seleccionado" : ""}`} 
-                            onClick={() => setHoraSeleccionada(hora)}
-                          >
-                            {hora}
-                          </button>
-                        ))
-                      ) : (
-                        <p className="col-span-3 text-center text-gray-500" style={{gridColumn: '1 / -1', color: '#888'}}>
-                          No hay horas disponibles.
-                        </p>
-                      )}
-                    </div>
+                <div className="dias-semana"><div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
+                <div className="grid-dias">{generarDias()}</div>
+              </div>
 
+              {diaSeleccionado && (
+                <div className="horas-container">
+                  <h3>Horarios para el {diaSeleccionado.toLocaleDateString()}</h3>
+
+                  {/* 🆕 AQUI USAMOS LA LISTA FILTRADA */}
+                  <div className="grid-horas">
+                    {horasParaMostrar.length > 0 ? (
+                      horasParaMostrar.map((hora) => (
+                        <button
+                          key={hora}
+                          className={`hora-btn ${horaSeleccionada === hora ? "seleccionado" : ""}`}
+                          onClick={() => setHoraSeleccionada(hora)}
+                        >
+                          {hora}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="col-span-3 text-center text-gray-500" style={{ gridColumn: '1 / -1', color: '#888' }}>
+                        No hay horas disponibles.
+                      </p>
+                    )}
                   </div>
-                )}
-                <button style={{ marginTop: '2rem', background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setPasoActual(1)}>
-                  &larr; Volver a sesiones
-                </button>
-             </div>
+
+                </div>
+              )}
+              <button style={{ marginTop: '2rem', background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setPasoActual(1)}>
+                &larr; Volver a sesiones
+              </button>
+            </div>
           )}
 
           {/* PASO 3: FORMULARIO */}
@@ -326,51 +332,101 @@ export default function PageReservas() {
               <h2>Tus Datos</h2>
               <form className="formulario" onSubmit={procesarReservaReal}>
                 <label>Nombre Completo</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="nombre"
-                  placeholder="Tu nombre" 
-                  required 
+                  placeholder="Tu nombre"
+                  required
                   value={datosForm.nombre}
                   onChange={handleInputChange}
                 />
 
                 <label>Correo Electrónico</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   name="email"
-                  placeholder="tucorreo@email.com" 
-                  required 
+                  placeholder="tucorreo@email.com"
+                  required
                   value={datosForm.email}
                   onChange={handleInputChange}
                 />
 
                 <label>Notas (opcional)</label>
-                <textarea 
+                <textarea
                   name="notas"
                   placeholder="¿Tienes alguna pregunta específica o tema en mente?"
                   value={datosForm.notas}
                   onChange={handleInputChange}
                 ></textarea>
 
-                <button 
-                   type="submit" 
-                   className="boton-cta" 
-                   style={{ marginTop: '1rem', width: '100%' }}
+                {/* --- CHECKBOX LEGAL --- */}
+                {/* --- CHECKBOX LEGAL --- */}
+                <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.9rem' }}>
+                  <input
+                    type="checkbox"
+                    id="legal-check"
+                    checked={aceptaLegales}
+                    onChange={(e) => setAceptaLegales(e.target.checked)}
+                    style={{
+                      marginTop: '4px',
+                      cursor: 'pointer',
+                      width: '18px',
+                      height: '18px',
+                      accentColor: '#a44cff' /* El tick saldrá morado a juego */
+                    }}
+                  />
+                  <label htmlFor="legal-check" style={{ color: '#ddd', cursor: 'pointer', lineHeight: '1.4' }}>
+                    He leído y acepto la{' '}
+                    <a href="/legal/privacidad" target="_blank" style={{ textDecoration: 'underline', color: '#b76cff' }}>
+                      Política de Privacidad
+                    </a>{' '}
+                    y los{' '}
+                    <a href="/legal/terminos" target="_blank" style={{ textDecoration: 'underline', color: '#b76cff' }}>
+                      Términos y Condiciones
+                    </a>.
+                  </label>
+                </div>
+
+                {/* --- BOTÓN DE PAGAR (Estilo .boton-cta recuperado) --- */}
+                <button
+                  className="boton-cta"
+                  onClick={procesarReservaReal}
+                  disabled={!aceptaLegales}
+                  style={{
+                    width: '100%',
+                    textAlign: 'center',
+                    marginTop: '10px',
+                    // Lógica visual: se apaga si no está marcado el check
+                    opacity: aceptaLegales ? 1 : 0.5,
+                    cursor: aceptaLegales ? 'pointer' : 'not-allowed',
+                    boxShadow: aceptaLegales ? undefined : 'none',
+                    transform: aceptaLegales ? undefined : 'none'
+                  }}
                 >
-                  Confirmar y Pagar {sesionElegida?.precio}€
+                  Confirmar y Pagar {sesionElegida ? `${sesionElegida.precio}€` : ''}
                 </button>
+
+                {/* Cierre del formulario (asegúrate de que encaja con tu código anterior) */}
               </form>
-              
-              <button 
-                style={{ marginTop: '1rem', background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline' }} 
+
+              <button
+                style={{
+                  marginTop: '1.5rem',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#888',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  fontSize: '0.9rem'
+                }}
                 onClick={() => setPasoActual(2)}
               >
                 &larr; Volver al calendario
               </button>
+
+              {/* Cierre del div contenedor */}
             </div>
           )}
-
         </div>
 
         {/* RESUMEN LATERAL */}
@@ -382,16 +438,16 @@ export default function PageReservas() {
               {diaSeleccionado && <p><strong>Fecha:</strong> {diaSeleccionado.toLocaleDateString()}</p>}
               {horaSeleccionada && <p><strong>Hora:</strong> {horaSeleccionada}</p>}
               <div className="total">Total: {sesionElegida.precio}€</div>
-              
+
               {pasoActual === 1 && (
                 <button className="boton-cta" style={{ width: '100%', marginTop: '1rem' }} onClick={() => setPasoActual(2)}>
                   Continuar &rarr;
                 </button>
               )}
               {pasoActual === 2 && (
-                <button 
-                  className="boton-cta" 
-                  style={{ width: '100%', marginTop: '1rem' }} 
+                <button
+                  className="boton-cta"
+                  style={{ width: '100%', marginTop: '1rem' }}
                   disabled={!diaSeleccionado || !horaSeleccionada}
                   onClick={() => setPasoActual(3)}
                 >

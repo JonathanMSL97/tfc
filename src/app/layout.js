@@ -1,6 +1,7 @@
 import { Playfair_Display, Open_Sans } from "next/font/google";
 import "./globals.css";
-// 1. IMPORTAMOS LOS COMPONENTES
+
+import CookieBanner from "@/components/CookieBanner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -32,10 +33,13 @@ export default function RootLayout({ children }) {
         <main style={{ minHeight: '80vh' }}> 
           {children}
         </main>
-
+        <CookieBanner />
         {/* 3. PONEMOS EL FOOTER ABAJO */}
         <Footer />
       </body>
     </html>
   );
 }
+
+
+
