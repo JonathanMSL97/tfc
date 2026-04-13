@@ -78,7 +78,7 @@ export default function PageReservas() {
     return dias;
   };
 
-  // --- 🆕 EFECTO: CARGAR HORAS OCUPADAS DESDE HASURA ---
+  // --- CARGAR HORAS OCUPADAS DESDE HASURA ---
   useEffect(() => {
     const cargarHorasOcupadas = async () => {
       // Si no hay día seleccionado, no hacemos nada
@@ -87,9 +87,9 @@ export default function PageReservas() {
       // Reseteamos las ocupadas mientras cargamos
       setHorasOcupadas([]);
 
-      // CORRECCIÓN DE ZONA HORARIA: Usamos la fecha local, no UTC
+      // fecha local, no UTC
       const year = diaSeleccionado.getFullYear();
-      const month = String(diaSeleccionado.getMonth() + 1).padStart(2, '0'); // Meses van de 0 a 11
+      const month = String(diaSeleccionado.getMonth() + 1).padStart(2, '0'); 
       const day = String(diaSeleccionado.getDate()).padStart(2, '0');
       const fechaString = `${year}-${month}-${day}`;
 
@@ -127,7 +127,7 @@ export default function PageReservas() {
   }, [diaSeleccionado]); // Se ejecuta cada vez que cambia el día
 
 
-  // --- 🆕 LÓGICA DE FILTRADO DE HORAS VISIBLES ---
+  // --- LÓGICA DE FILTRADO DE HORAS VISIBLES ---
   const getHorasVisibles = () => {
     if (!diaSeleccionado) return [];
 
