@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 export default function Services() {
-  // Aquí definimos los datos de tus servicios
   const listaServicios = [
     {
       titulo: "Pregunta si o no",
@@ -28,7 +27,6 @@ export default function Services() {
       <h2>Mis Servicios</h2>
       
       <div className="servicios-grid">
-        {/* Aquí usamos .map para "dibujar" cada servicio automáticamente */}
         {listaServicios.map((servicio, index) => (
           <article key={index} className="tarjeta-servicio">
             <img src={servicio.imagen} alt={servicio.titulo} />
@@ -36,7 +34,6 @@ export default function Services() {
             <p>{servicio.descripcion}</p>
             <span className="precio">{servicio.precio}</span>
             
-            {/* Botón reutilizable */}
             <div style={{ marginTop: '1.5rem' }}>
                <Link href="/reservas" className="boton-cta" style={{ fontSize: '0.9rem', padding: '0.6rem 1.2rem' }}>
                  Reservar

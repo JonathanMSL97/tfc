@@ -19,22 +19,20 @@ export async function POST(request) {
               name: `Sesión de Tarot: ${sesion}`,
               description: `Reserva para el día ${fecha} a las ${hora}`,
             },
-            unit_amount: precio * 100, // Stripe funciona en céntimos (50€ = 5000)
+            unit_amount: precio * 100, 
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      // IMPORTANTE: Aquí guardamos los datos para recuperarlos tras el pago
       metadata: {
         nombre,
         email,
         fecha,
         hora,
         sesion,
-        notas: notas || "", // Stripe no acepta nulls en metadata
+        notas: notas || "", 
       },
-      // A dónde redirigir si paga o si cancela
       success_url: `${request.headers.get('origin')}/exito`,
       cancel_url: `${request.headers.get('origin')}/`,
     });

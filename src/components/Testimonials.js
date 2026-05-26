@@ -1,5 +1,4 @@
 export default function Testimonials() {
-  // 1. LOS DATOS 
   const testimonios = [
     {
       texto: "María Rosa me ayudó a encontrar claridad en un momento difícil de mi vida. Sus lecturas son asombrosamente precisas.",
@@ -11,7 +10,6 @@ export default function Testimonials() {
     }
   ];
 
-  // 2. Código
   return (
     <section className="testimonios" id="testimonios">
       <h2>Testimonios</h2>

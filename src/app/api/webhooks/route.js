@@ -2,13 +2,12 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { google } from "googleapis";
-import { Resend } from 'resend'; // 🆕 Importamos Resend
+import { Resend } from 'resend'; 
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const resend = new Resend(process.env.RESEND_API_KEY); // 🆕 Inicializamos
+const resend = new Resend(process.env.RESEND_API_KEY); 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-// --- FUNCIÓN 1: CREAR EVENTO EN GOOGLE CALENDAR ---
 async function crearEventoGoogleCalendar(datos) {
   try {
     const auth = new google.auth.GoogleAuth({
@@ -47,11 +46,10 @@ async function crearEventoGoogleCalendar(datos) {
 
   } catch (error) {
     console.error("❌ Error Calendar:", error.message);
-    return process.env.MEET_LINK_FIJO; // Si falla calendar, devolvemos el link igual
+    return process.env.MEET_LINK_FIJO; 
   }
 }
 
-// --- FUNCIÓN 2: GUARDAR EN HASURA ---
 async function guardarReservaEnHasura(datos) {
   const query = `
     mutation InsertarReservaWebhook($nombre: String!, $email: String!, $fecha: String!, $hora: String!, $precio: Int!, $sesion: String!, $notas: String) {
@@ -60,7 +58,6 @@ async function guardarReservaEnHasura(datos) {
       }) { id }
     }
   `;
-  // ... variables ... (resumido para no ocupar mucho, es igual que antes)
   const variables = {
     nombre: datos.nombre, email: datos.email, fecha: datos.fecha, 
     hora: datos.hora, precio: parseInt(datos.precio), sesion: datos.sesion, notas: datos.notas
@@ -78,13 +75,11 @@ async function guardarReservaEnHasura(datos) {
   } catch (error) { console.error("Error Hasura:", error); }
 }
 
-// --- 🆕 FUNCIÓN 3: ENVIAR EMAIL AL CLIENTE ---
 async function enviarEmailConfirmacion(datos, meetLink) {
   try {
-    // onbarding@resend.dev es el correo de prueba obligatorio hasta que verifiques tu dominio
     const data = await resend.emails.send({
       from: 'Tarot Reservas <onboarding@resend.dev>', 
-      to: [datos.email], // ⚠️ En pruebas, este email DEBE ser el tuyo propio
+      to: [datos.email], 
       subject: '✨ Confirmación de tu Lectura de Tarot',
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -115,7 +110,6 @@ async function enviarEmailConfirmacion(datos, meetLink) {
   }
 }
 
-// --- MAIN WEBHOOK ---
 export async function POST(req) {
   const body = await req.text();
   const headersList = await headers();
@@ -136,13 +130,10 @@ export async function POST(req) {
 
     const datosReserva = { ...metadata, precio: session.amount_total / 100 };
 
-    // 1. Calendar
     const meetLink = await crearEventoGoogleCalendar(datosReserva);
 
-    // 2. Hasura
     await guardarReservaEnHasura(datosReserva);
 
-    // 3. Email (¡NUEVO!)
     await enviarEmailConfirmacion(datosReserva, meetLink);
   }
 

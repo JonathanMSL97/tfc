@@ -1,42 +1,34 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // Para redirigir al usuario después de pagar
+import { useRouter } from "next/navigation"; 
 
 export default function PageReservas() {
   const router = useRouter();
 
-  // --- ESTADOS ---
   const [pasoActual, setPasoActual] = useState(1);
-
-  // Datos de la Reserva
   const [sesionElegida, setSesionElegida] = useState(null);
   const [fechaCalendario, setFechaCalendario] = useState(new Date());
   const [diaSeleccionado, setDiaSeleccionado] = useState(null);
   const [horaSeleccionada, setHoraSeleccionada] = useState(null);
   const [aceptaLegales, setAceptaLegales] = useState(false);
-
-  // 🆕 Estado para guardar las horas que ya están cogidas en la BD
   const [horasOcupadas, setHorasOcupadas] = useState([]);
 
-  // Datos del Usuario (Formulario)
   const [datosForm, setDatosForm] = useState({
     nombre: "",
     email: "",
     notas: ""
   });
 
-  // --- DATOS FIJOS ---
   const opciones = [
     { id: 1, titulo: "Pregunta si o no", precio: 30, desc: "Respuesta concreta." },
     { id: 2, titulo: "Lectura General", precio: 50, desc: "Visión completa." },
     { id: 3, titulo: "Sesión Profunda", precio: 70, desc: "Análisis detallado." },
   ];
 
-  // Todas las horas posibles (antes de filtrar)
   const HORAS_TOTALES = ["09:00", "10:00", "11:00", "16:00", "17:00", "18:00", "19:00"];
 
-  // --- LÓGICA DE CALENDARIO ---
+  // --- migrar a calendly post defensa ---
   const mesAnio = fechaCalendario.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
 
   const cambiarMes = (offset) => {
@@ -68,7 +60,7 @@ export default function PageReservas() {
           disabled={esPasado}
           onClick={() => {
             setDiaSeleccionado(fechaActual);
-            setHoraSeleccionada(null); // Reseteamos hora al cambiar de día
+            setHoraSeleccionada(null); 
           }}
         >
           {d}
@@ -78,16 +70,12 @@ export default function PageReservas() {
     return dias;
   };
 
-  // --- CARGAR HORAS OCUPADAS DESDE HASURA ---
   useEffect(() => {
     const cargarHorasOcupadas = async () => {
-      // Si no hay día seleccionado, no hacemos nada
       if (!diaSeleccionado) return;
 
-      // Reseteamos las ocupadas mientras cargamos
       setHorasOcupadas([]);
 
-      // fecha local, no UTC
       const year = diaSeleccionado.getFullYear();
       const month = String(diaSeleccionado.getMonth() + 1).padStart(2, '0'); 
       const day = String(diaSeleccionado.getDate()).padStart(2, '0');
@@ -114,7 +102,6 @@ export default function PageReservas() {
         const json = await response.json();
 
         if (json.data && json.data.reservas) {
-          // Extraemos solo las horas en un array simple: ["10:00", "16:00"]
           const ocupadas = json.data.reservas.map(r => r.hora);
           setHorasOcupadas(ocupadas);
         }
@@ -124,42 +111,35 @@ export default function PageReservas() {
     };
 
     cargarHorasOcupadas();
-  }, [diaSeleccionado]); // Se ejecuta cada vez que cambia el día
+  }, [diaSeleccionado]);
 
 
-  // --- LÓGICA DE FILTRADO DE HORAS VISIBLES ---
   const getHorasVisibles = () => {
     if (!diaSeleccionado) return [];
 
     const ahora = new Date();
-    // Comprobamos si el día seleccionado es HOY
     const esHoy = diaSeleccionado.getDate() === ahora.getDate() &&
       diaSeleccionado.getMonth() === ahora.getMonth() &&
       diaSeleccionado.getFullYear() === ahora.getFullYear();
 
     return HORAS_TOTALES.filter((horaString) => {
-      // 1. Si está en la lista de ocupadas (de la BD), fuera.
       if (horasOcupadas.includes(horaString)) return false;
 
-      // 2. Si es HOY, filtramos las horas que ya pasaron
       if (esHoy) {
         const [h, m] = horaString.split(':');
         const fechaSlot = new Date();
         fechaSlot.setHours(parseInt(h), parseInt(m), 0, 0);
 
-        // Si la hora del slot es menor que ahora, fuera.
         if (fechaSlot < ahora) return false;
       }
 
-      return true; // Si pasa los filtros, se muestra
+      return true; 
     });
   };
 
-  // Guardamos las horas limpias en una variable
   const horasParaMostrar = getHorasVisibles();
 
 
-  // --- MANEJO DEL FORMULARIO ---
   const handleInputChange = (e) => {
     setDatosForm({
       ...datosForm,
@@ -167,7 +147,6 @@ export default function PageReservas() {
     });
   };
 
-  // --- FUNCIÓN PRINCIPAL DE RESERVA ---
   const procesarReservaReal = async (e) => {
     e.preventDefault();
 
@@ -176,22 +155,16 @@ export default function PageReservas() {
       return;
     }
 
-    // 1. Validaciones básicas: Si falta algo, simplemente no hacemos nada (el botón suele estar deshabilitado)
     if (!sesionElegida || !diaSeleccionado || !horaSeleccionada) {
       return;
     }
 
-    // --- FORMATEO DE FECHA (ZONA HORARIA LOCAL) ---
-    // Usamos esto para evitar el bug de que se guarde el día anterior
     const year = diaSeleccionado.getFullYear();
     const month = String(diaSeleccionado.getMonth() + 1).padStart(2, '0');
     const day = String(diaSeleccionado.getDate()).padStart(2, '0');
     const fechaString = `${year}-${month}-${day}`;
 
-    // --- GUARDIA DE SEGURIDAD (SILENCIOSA) ---
-    // Aunque los botones están ocultos, comprobamos esto por si acaso (ej. hack o error de carga)
 
-    // Check 1: Pasado
     const ahora = new Date();
     const fechaReserva = new Date(diaSeleccionado);
     const [horas, minutos] = horaSeleccionada.split(':');
@@ -199,16 +172,14 @@ export default function PageReservas() {
 
     if (fechaReserva < ahora) {
       console.warn("Intento de reservar hora pasada bloqueado.");
-      return; // Cortamos sin alerta visual
+      return; 
     }
 
-    // Check 2: Ocupado (Doble check con lo que cargó React)
     if (horasOcupadas.includes(horaSeleccionada)) {
-      alert("⚠️ Vaya, alguien acaba de reservar ese hueco hace un segundo."); // Esta SÍ la dejaría, es el único caso raro "en tiempo real"
-      return;
+      alert("⚠️ Vaya, alguien acaba de reservar ese hueco hace un segundo."); 
+      
     }
 
-    // --- CONEXIÓN CON STRIPE ---
     try {
       const response = await fetch('/api/checkout', {
         method: 'POST',
@@ -229,7 +200,6 @@ export default function PageReservas() {
       const data = await response.json();
 
       if (data.url) {
-        // ¡Éxito! Nos vamos a Stripe
         window.location.href = data.url;
       } else {
         console.error("Stripe no devolvió URL:", data);
@@ -299,7 +269,7 @@ export default function PageReservas() {
                 <div className="horas-container">
                   <h3>Horarios para el {diaSeleccionado.toLocaleDateString()}</h3>
 
-                  {/* 🆕 AQUI USAMOS LA LISTA FILTRADA */}
+                  
                   <div className="grid-horas">
                     {horasParaMostrar.length > 0 ? (
                       horasParaMostrar.map((hora) => (
@@ -359,8 +329,6 @@ export default function PageReservas() {
                   onChange={handleInputChange}
                 ></textarea>
 
-                {/* --- CHECKBOX LEGAL --- */}
-                {/* --- CHECKBOX LEGAL --- */}
                 <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.9rem' }}>
                   <input
                     type="checkbox"
@@ -372,7 +340,7 @@ export default function PageReservas() {
                       cursor: 'pointer',
                       width: '18px',
                       height: '18px',
-                      accentColor: '#a44cff' /* El tick saldrá morado a juego */
+                      accentColor: '#a44cff' 
                     }}
                   />
                   <label htmlFor="legal-check" style={{ color: '#ddd', cursor: 'pointer', lineHeight: '1.4' }}>
@@ -387,7 +355,6 @@ export default function PageReservas() {
                   </label>
                 </div>
 
-                {/* --- BOTÓN DE PAGAR (Estilo .boton-cta recuperado) --- */}
                 <button
                   className="boton-cta"
                   onClick={procesarReservaReal}
@@ -396,7 +363,6 @@ export default function PageReservas() {
                     width: '100%',
                     textAlign: 'center',
                     marginTop: '10px',
-                    // Lógica visual: se apaga si no está marcado el check
                     opacity: aceptaLegales ? 1 : 0.5,
                     cursor: aceptaLegales ? 'pointer' : 'not-allowed',
                     boxShadow: aceptaLegales ? undefined : 'none',
@@ -406,7 +372,6 @@ export default function PageReservas() {
                   Confirmar y Pagar {sesionElegida ? `${sesionElegida.precio}€` : ''}
                 </button>
 
-                {/* Cierre del formulario (asegúrate de que encaja con tu código anterior) */}
               </form>
 
               <button
@@ -424,12 +389,10 @@ export default function PageReservas() {
                 &larr; Volver al calendario
               </button>
 
-              {/* Cierre del div contenedor */}
             </div>
           )}
         </div>
 
-        {/* RESUMEN LATERAL */}
         <aside className="resumen">
           <h3>Resumen</h3>
           {sesionElegida ? (
