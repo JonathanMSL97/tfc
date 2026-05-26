@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Services() {
   const listaServicios = [
@@ -29,7 +30,7 @@ export default function Services() {
       <div className="servicios-grid">
         {listaServicios.map((servicio, index) => (
           <article key={index} className="tarjeta-servicio">
-            <img src={servicio.imagen} alt={servicio.titulo} />
+            <Image src={servicio.imagen} alt={servicio.titulo} width={400} height={300} style={{ width: '100%', height: 'auto' }} />
             <h3>{servicio.titulo}</h3>
             <p>{servicio.descripcion}</p>
             <span className="precio">{servicio.precio}</span>

@@ -29,7 +29,7 @@ async function crearEventoGoogleCalendar(datos) {
     const meetLink = process.env.MEET_LINK_FIJO || "https://meet.google.com/tu-link-aqui";
 
     const evento = {
-      summary: `🔮 Tarot: ${datos.sesion} con ${datos.nombre}`,
+      summary: ` Tarot: ${datos.sesion} con ${datos.nombre}`,
       description: `Sala de Videollamada: ${meetLink}\n\nNotas: ${datos.notas || "-"}\nStripe ID: ${datos.email}`,
       location: meetLink,
       start: { dateTime: fechaInicio, timeZone: 'Europe/Madrid' },
@@ -41,7 +41,7 @@ async function crearEventoGoogleCalendar(datos) {
       resource: evento,
     });
 
-    console.log("📅 Evento creado en Calendar.");
+    console.log(" Evento creado en Calendar.");
     return meetLink; 
 
   } catch (error) {
@@ -71,7 +71,7 @@ async function guardarReservaEnHasura(datos) {
     });
     const json = await response.json();
     if (json.errors) return console.error("Error Hasura:", json.errors);
-    console.log("✅ Reserva guardada en Hasura.");
+    console.log(" Reserva guardada en Hasura.");
   } catch (error) { console.error("Error Hasura:", error); }
 }
 
@@ -104,7 +104,7 @@ async function enviarEmailConfirmacion(datos, meetLink) {
         </div>
       `
     });
-    console.log("📧 Email enviado:", data.id);
+    console.log(" Email enviado:", data.id);
   } catch (error) {
     console.error("❌ Error enviando email:", error);
   }
@@ -126,7 +126,7 @@ export async function POST(req) {
     const session = event.data.object;
     const metadata = session.metadata;
 
-    console.log("💰 Pago recibido de:", metadata.nombre);
+    console.log(" Pago recibido de:", metadata.nombre);
 
     const datosReserva = { ...metadata, precio: session.amount_total / 100 };
 

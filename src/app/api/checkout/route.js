@@ -8,7 +8,6 @@ export async function POST(request) {
     const body = await request.json();
     const { nombre, email, fecha, hora, precio, sesion, notas } = body;
 
-    // Creamos la sesión de pago en Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [

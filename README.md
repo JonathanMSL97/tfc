@@ -69,22 +69,4 @@ Si quieres ejecutar este proyecto en tu máquina local:
 
 5.  Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
----
 
-## 🗺️ Hoja de Ruta (Roadmap)
-
-El desarrollo se encuentra actualmente en la **Fase 3**.
-
-- [x] **Fase 1: Migración Frontend.** Portar HTML/CSS estático a componentes React y Next.js.
-- [x] **Fase 2: Lógica de Negocio.** Crear el motor del calendario y el flujo de estados del wizard de reservas.
-- [x] **Fase 3: Infraestructura Backend.** Configurar Neon (Postgres) y Hasura (GraphQL).
-- [ ] **Fase 4: Integración API.** Conectar el formulario de React con Hasura (Mutation `insert_reservas`).
-- [ ] **Fase 5: Pagos y Agendamiento.** Integración con Stripe y Google Calendar API.
-
----
-
-## ✒️ Autor
-
-**Jonathan M.** - Desarrollador Full Stack en formación.
-*Proyecto realizado como Trabajo de Fin de Ciclo (TFC).*
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

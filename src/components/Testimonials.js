@@ -15,7 +15,7 @@ export default function Testimonials() {
       <h2>Testimonios</h2>
       {testimonios.map((testimonio, index) => (
         <article key={index} className="testimonio-card">
-          <p className="texto">"{testimonio.texto}"</p>
+          <p className="texto">{`"${testimonio.texto}"`}</p>
           <p className="autor">- {testimonio.autor}</p>
         </article>
       ))}
